@@ -1,14 +1,12 @@
 import { inject } from '@angular/core';
-import { ResolveFn, ActivatedRouteSnapshot } from '@angular/router';
-import { ProductsService, Product } from './products.service';
+import { RedirectCommand, ResolveFn, Router } from '@angular/router';
+import { catchError, of } from 'rxjs';
+import { Product, ProductsService } from './products.service';
 
-export const productsResolver: ResolveFn<Product[]> = () => {
-  return inject(ProductsService).getProducts();
-};
-
-export const productDetailResolver: ResolveFn<Product> = (
-  route: ActivatedRouteSnapshot
-) => {
-  const id = route.paramMap.get('id')!;
-  return inject(ProductsService).getProductById(id);
+/** Resolve o produto; se não existir, redireciona para o catálogo. */
+export const productDetailResolver: ResolveFn<Product | RedirectCommand> = (route) => {
+  const router = inject(Router);
+  return inject(ProductsService)
+    .getProductById(route.paramMap.get('id') ?? '')
+    .pipe(catchError(() => of(new RedirectCommand(router.parseUrl('/products')))));
 };
