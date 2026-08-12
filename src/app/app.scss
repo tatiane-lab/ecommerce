@@ -1,0 +1,14 @@
+.container { max-width: 1180px; margin: 0 auto; padding: 0 1rem; }
+.topbar { position: sticky; top: 0; z-index: 20; background: rgb(255 255 255 / 88%);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.bar { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 1rem; }
+.brand { font-weight: 800; font-size: 1.25rem; text-decoration: none; color: var(--text);
+  span { color: var(--primary); } }
+nav { display: flex; align-items: center; gap: .6rem; }
+.user { font-size: .9rem; }
+.cart-btn { position: relative; }
+.badge { background: #fff; color: var(--primary); border-radius: 999px; min-width: 1.4rem;
+  height: 1.4rem; display: inline-grid; place-items: center; font-size: .75rem; padding: 0 .3rem; }
+main { padding-top: 1.5rem; padding-bottom: 2rem; min-height: calc(100vh - 140px); }
+.foot { text-align: center; padding: 1.5rem 1rem; font-size: .85rem; }
+@media (max-width: 560px) { .user { display: none; } .btn { padding: .6rem .8rem; } }
