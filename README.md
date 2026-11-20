@@ -1,43 +1,52 @@
-# E-commerce
+# LojaNg · E-commerce em Angular 22
 
-> Angular 22 · `@defer` · Skeleton Loaders · `computed` Cart · Multi-step Checkout · Async Validators · Route Resolvers
+Loja de demonstração (portfólio) com catálogo, busca/filtros, carrinho lateral persistido, login e checkout em múltiplas etapas. Funciona 100% no navegador: os dados são fictícios e a "API" é simulada com latência (RxJS `delay`).
 
-A product catalogue, shopping cart and multi-step checkout built with modern Angular primitives.
+## Credenciais demo
+
+| E-mail | Senha |
+|---|---|
+| `demo@loja.dev` | `demo1234` |
+
+A tela de login já vem pré-preenchida e tem o botão **Entrar com conta demo**. O checkout exige login. Cartão de teste: `4242424242424242` (qualquer validade `MM/AA` e CVV).
 
 ## Features
 
-- **Persistent Cart with `computed`** – cart items live in a `signal<CartItem[]>()` backed by `localStorage` via `effect()`; `subtotal`, `tax`, `total`, and `isEmpty` are `computed()` values that update automatically.
-- **`@defer` with Skeleton Placeholder** – the product grid uses `@defer (on viewport)` so it only loads when it enters the viewport; the `@placeholder` block shows skeleton cards; `@loading (minimum 300ms)` avoids flash-of-loading.
-- **Route Resolvers** – `productsResolver` and `productDetailResolver` are `ResolveFn<T>` functions; routes use `withComponentInputBinding()` so resolved data flows directly into component `@Input()` signals.
-- **Multi-step Checkout** – shipping → payment → review flow driven by a `signal<Step>()` with `computed()` for the step index; each step has its own typed `fb.nonNullable.group`.
-- **Async Card Validator** – card number field uses an `AsyncValidatorFn` that debounces 600 ms with `timer(600).pipe(switchMap(...))` before hitting `/api/payments/validate`.
+- Catálogo com skeletons de carregamento, estados de erro (com "tentar novamente") e vazio.
+- Busca, filtro por categoria e ordenação (preço, avaliação).
+- Detalhe do produto com galeria de imagens e dados vindos de um `ResolveFn` (redireciona se o produto não existe).
+- Carrinho lateral (drawer) com quantidades, remoção, barra de frete grátis e totais; persistido em `localStorage`.
+- Login com guard (`returnUrl`) e sessão persistida.
+- Checkout em 3 etapas (entrega, pagamento, revisão) com validador assíncrono de cartão (Luhn, debounce) e confirmação de pedido.
+- Imagens de produto geradas como SVG inline: nunca quebram, nem offline.
+- Responsivo, acessível (foco visível, `aria-*`, `prefers-reduced-motion`).
 
-## Tech Stack
+## Stack
 
-| Package | Version |
-|---|---|
-| `@angular/core` | ^22.3.0 |
-| `@angular/router` | ^22.3.0 |
-| `rxjs` | ~7.8.0 |
+Angular 22 (standalone, signals, `rxResource`, control flow, `input()` via `withComponentInputBinding`), RxJS 7, SCSS, Vitest.
 
-## Running locally
+## Como rodar
 
 ```bash
-npm install
-ng serve
+npm install --legacy-peer-deps   # o peer range de @angular/build exige TypeScript 6
+npm start                        # http://localhost:4200
+npm run build
+npm test
 ```
 
-## Architecture
+## Decisões de arquitetura
+
+- **Componentes standalone + OnPush** em todo o app; rotas com `loadComponent` (lazy).
+- **Estado com signals**: `CartService` expõe `computed` (subtotal, imposto, total, progresso de frete) e persiste via `effect()`; `AuthService` segue o mesmo padrão.
+- **Sem backend**: serviços (`ProductsService`, `CheckoutService`, `AuthService`) devolvem `Observable` com delay, então trocar por `HttpClient` não muda os componentes.
+- **Guards funcionais**: `authGuard` (redireciona ao login) e guard de carrinho vazio no checkout.
+- **Formulários tipados** (`nonNullable.group`) e validador assíncrono com `timer + switchMap`.
 
 ```
 src/app/
-├── cart/
-│   └── cart.service.ts       # signal + computed + localStorage effect
-├── products/
-│   ├── products.service.ts   # HTTP service
-│   ├── products.resolver.ts  # ResolveFn<Product[]> and ResolveFn<Product>
-│   └── product-list.component.ts  # @defer / @placeholder / @loading
-└── checkout/
-    ├── checkout.component.ts # multi-step form with async validator
-    └── checkout.service.ts   # placeOrder + validateCard
+├── auth/       # AuthService, guard, login
+├── cart/       # CartService, drawer
+├── products/   # service, resolver, lista, detalhe
+├── checkout/   # checkout multi-etapas, confirmação
+└── shared/     # gerador de imagens SVG
 ```
